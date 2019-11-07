@@ -1,0 +1,76 @@
+# Initial rsync
+TIMEC() {
+ if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  return 1
+ fi
+ E_R_T="${HOME}/evergreen_rsynctimes/"
+ test -d $E_R_T || mkdir $E_R_T
+ filepath=${E_R_T}${1}
+ rsync_cmd=${@:2}
+ echo -en "---\n$(date)\n${rsync_cmd}\ntime: " >> ${filepath}
+ $(which time) -f %E -ao ${filepath} ${rsync_cmd} --rsync-path='/usr/bin/ionice -c2 -n7 rsync'
+ echo "exitcode: ${?}" >> ${filepath}
+}
+
+source=<OLD_SERVER_IP>
+
+TIMEC kb1190    rsync -avP --delete-delay ${source}:/usr/local/Intelerad/upgrade/usr/local/Intelerad/etc/kb1190/ /usr/local/Intelerad/upgrade/usr/local/Intelerad/etc/kb1190/
+TIMEC certs     rsync -avP --delete-delay ${source}:/usr/local/Intelerad/3rd_Party/apache2/conf/certs/ /usr/local/Intelerad/3rd_Party/apache2/conf/certs/
+TIMEC homeadmin rsync -avP --delete-delay --exclude=".ssh/" --exclude=".*history" ${source}:/home/admin/ /home/admin/
+TIMEC logs      rsync -avP --delete-delay ${source}:/var/log/PACS/ /var/log/PACS/
+TIMEC spoolIMS  rsync -avP --delete-delay ${source}:/var/spool/Intelerad/ /var/spool/Intelerad/
+
+# Sync /opt/imsdb/
+TIMEC imsdb  rsync -avPH --delete-delay --exclude 'sybase' --exclude 'chroot-sybase' ${source}:/opt/imsdb/ /opt/imsdb/
+TIMEC sybdev rsync -avPL --delete-delay --exclude 'TaxaDev' ${source}:/opt/imsdb/sybase/Devices/ /opt/imsdb/sybase/Devices/
+TIMEC sybcfg rsync -avP ${source}:/opt/imsdb/sybase/SYBASE.cfg /opt/imsdb/sybase/
+TIMEC sybcfg rsync -avP ${source}:/opt/imsdb/sybase/SYBASE.cfg /tmp/
+
+# Sync Images
+#TIMEC PACS rsync -avPH --delete-delay ${source}:/usr/local/PACS/ /usr/local/PACS/
+#If you have many image partitions/bins, you can do 1 rsync per partition/bin.
+#If the partition/bin sizes are in terabytes, test and use the "--delete-before" argument instead of --delete-delay.
+TIMEC PACS  rsync -avPH -x --delete-delay ${source}:/usr/local/PACS/ /usr/local/PACS/
+TIMEC Pdev1 rsync -avPH -x --delete-delay ${source}:/usr/local/PACS/images/dev1/ /usr/local/PACS/images/dev1/
+TIMEC Pdev2 rsync -avPH -x --delete-delay ${source}:/usr/local/PACS/images/dev2/ /usr/local/PACS/images/dev2/
+TIMEC Pdev<N> rsync -avPH -x --delete-delay ${source}:/usr/local/PACS/images/dev<N>/ /usr/local/PACS/images/dev<N>/ # as many bins as required
+
+
+# Final rsync
+TIMEC() {
+ if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  return 1
+ fi
+ E_R_T="${HOME}/evergreen_rsynctimes/"
+ test -d $E_R_T || mkdir $E_R_T
+ filepath=${E_R_T}${1}
+ rsync_cmd=${@:2}
+ echo -en "---\n$(date)\n${rsync_cmd}\ntime: " >> ${filepath}
+ $(which time) -f %E -ao ${filepath} ${rsync_cmd}
+ echo "exitcode: ${?}" >> ${filepath}
+}
+
+source=<old_server_IP>
+
+TIMEC kb1190    rsync -avP --delete-delay ${source}:/usr/local/Intelerad/upgrade/usr/local/Intelerad/etc/kb1190/ /usr/local/Intelerad/upgrade/usr/local/Intelerad/etc/kb1190/
+TIMEC certs     rsync -avP --delete-delay ${source}:/usr/local/Intelerad/3rd_Party/apache2/conf/certs/ /usr/local/Intelerad/3rd_Party/apache2/conf/certs/
+TIMEC homeadmin rsync -avP --delete-delay --exclude=".ssh/" --exclude=".*history" ${source}:/home/admin/ /home/admin/
+TIMEC logs      rsync -avP --delete-delay ${source}:/var/log/PACS/ /var/log/PACS/
+TIMEC spoolIMS  rsync -avP --delete-delay ${source}:/var/spool/Intelerad/ /var/spool/Intelerad/
+
+# Sync /opt/imsdb/
+TIMEC imsdb  rsync -avPH --delete-delay --exclude 'sybase' --exclude 'chroot-sybase' ${source}:/opt/imsdb/ /opt/imsdb/
+TIMEC sybdev rsync -avPL --delete-delay ${source}:/opt/imsdb/sybase/Devices/ /opt/imsdb/sybase/Devices/
+TIMEC sybcfg rsync -avP ${source}:/opt/imsdb/sybase/SYBASE.cfg /opt/imsdb/sybase/
+TIMEC sybcfg rsync -avP ${source}:/opt/imsdb/sybase/SYBASE.cfg /tmp/
+
+# Sync Images
+#TIMEC PACS rsync -avPH --delete-delay ${source}:/usr/local/PACS/ /usr/local/PACS/
+#If you have many image partitions/bins, you can do 1 rsync per partition/bin.
+#If the partition/bin sizes are in terabytes, test and use the "--delete-before" argument instead of --delete-delay.
+TIMEC PACS  rsync -avPH -x --delete-delay ${source}:/usr/local/PACS/ /usr/local/PACS/
+TIMEC Pdev1 rsync -avPH -x --delete-delay ${source}:/usr/local/PACS/images/dev1/ /usr/local/PACS/images/dev1/
+TIMEC Pdev2 rsync -avPH -x --delete-delay ${source}:/usr/local/PACS/images/dev2/ /usr/local/PACS/images/dev2/
+TIMEC Pdev<N> rsync -avPH -x --delete-delay ${source}:/usr/local/PACS/images/dev<N>/ /usr/local/PACS/images/dev<N>/ # as many bins as required
