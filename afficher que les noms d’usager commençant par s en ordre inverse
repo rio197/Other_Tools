@@ -1,0 +1,3 @@
+# En utilisant awk et en definissant le "deux points" comme le separateur des champs, imprimer les contenus de
+# la premiere colonne du fichier /etc/passwd et trier la sortie d'ecran dans l'ordre alphabetique inverse:
+$ awk -F ":" '{print $1}' /etc/passwd  | sort -nr
